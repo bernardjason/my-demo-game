@@ -14,6 +14,7 @@ public class DemoGame extends ApplicationAdapter {
     Snake snake;
     Prize prize;
     BitmapFont font;
+    boolean started = false;
 
     @Override
     public void create() {
@@ -23,6 +24,10 @@ public class DemoGame extends ApplicationAdapter {
         font = new BitmapFont();
 
         Gdx.input.setInputProcessor(new InputAdapter() {
+            public boolean touchDown (int screenX, int screenY, int pointer, int button) {
+                started = true;
+                return true;
+            }
             public boolean keyDown(int keycode) {
                 switch (keycode) {
                     case Input.Keys.ESCAPE:
@@ -52,6 +57,16 @@ public class DemoGame extends ApplicationAdapter {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        if ( started ) mainGamePlay();
+        else {
+            batch.begin();
+            font.draw(batch, "click on screen to start...",199,Gdx.graphics.getHeight()/2.0f);
+            batch.end();
+
+        }
+    }
+
+    private void mainGamePlay() {
         float delta = Gdx.graphics.getDeltaTime();
         batch.begin();
         if (snake.lives > 0) {
