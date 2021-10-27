@@ -1,13 +1,11 @@
 package org.bjason.mydemogame;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.input.GestureDetector;
 
 public class DemoGame extends ApplicationAdapter {
     SpriteBatch batch;
@@ -15,6 +13,7 @@ public class DemoGame extends ApplicationAdapter {
     Prize prize;
     BitmapFont font;
     boolean started = false;
+    static float SENSITIVE = 20.0f;
 
     @Override
     public void create() {
@@ -23,11 +22,31 @@ public class DemoGame extends ApplicationAdapter {
         prize = new Prize();
         font = new BitmapFont();
 
-        Gdx.input.setInputProcessor(new InputAdapter() {
-            public boolean touchDown (int screenX, int screenY, int pointer, int button) {
+
+        float scaleX = Gdx.graphics.getHeight() / 380.0f;
+        float scaleY = Gdx.graphics.getWidth() / 540.0f;
+
+        float scale = scaleX;
+        if ( scaleY > scaleX ) scale = scaleY;
+        font.getData().setScale(scale,scale);
+
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+
+        inputMultiplexer.addProcessor(new GestureDetector(new GestureDetector.GestureAdapter() {
+            public boolean pan(float x, float y, float deltaX, float deltaY) {
+                if ( deltaX < -SENSITIVE) snake.leftRight(-1.0f);
+                if ( deltaX > SENSITIVE) snake.leftRight(1.0f);
+                if ( deltaY > SENSITIVE) snake.upDown(-1.0f);
+                if ( deltaY < -SENSITIVE) snake.upDown(1.0f);
+                return true;
+            }
+            public boolean tap(float x, float y, int count, int button) {
                 started = true;
                 return true;
             }
+        }));
+
+        inputMultiplexer.addProcessor(new InputAdapter() {
             public boolean keyDown(int keycode) {
                 switch (keycode) {
                     case Input.Keys.ESCAPE:
@@ -49,6 +68,7 @@ public class DemoGame extends ApplicationAdapter {
                 return true;
             }
         });
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
@@ -60,7 +80,7 @@ public class DemoGame extends ApplicationAdapter {
         if ( started ) mainGamePlay();
         else {
             batch.begin();
-            font.draw(batch, "click on screen to start...",199,Gdx.graphics.getHeight()/2.0f);
+            font.draw(batch, "click on screen to start...",50,Gdx.graphics.getHeight()/2.0f);
             batch.end();
 
         }
